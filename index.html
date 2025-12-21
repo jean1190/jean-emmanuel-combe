@@ -76,6 +76,37 @@
       -webkit-text-fill-color: transparent;
     }
 
+    /* Language Toggle */
+    .lang-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+
+    .lang-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      opacity: 0.4;
+      transition: all 0.3s ease;
+      font-size: 1.5rem;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .lang-btn:hover {
+      opacity: 0.8;
+      transform: scale(1.1);
+    }
+
+    .lang-btn.active {
+      opacity: 1;
+      filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.3));
+    }
+
     @keyframes fadeIn {
       to {
         opacity: 1;
@@ -87,10 +118,15 @@
 
 <body>
 
+  <div class="lang-toggle">
+    <button class="lang-btn active" data-lang="fr" title="Français">🇫🇷</button>
+    <button class="lang-btn" data-lang="en" title="English">🇬🇧</button>
+  </div>
+
   <canvas id="constellation"></canvas>
 
   <div class="container">
-    <h1>Il n'y a que le chemin qui est réel.</h1>
+    <h1 data-i18n="quote">Il n'y a que le chemin qui est réel.</h1>
   </div>
 
   <script>
@@ -222,6 +258,33 @@
     }
 
     animate();
+
+    // --- i18n ---
+    const translations = {
+      fr: { "quote": "Il n'y a que le chemin qui est réel." },
+      en: { "quote": "Only the path is real." }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'fr';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('lang', lang);
+      document.documentElement.lang = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (translations[lang] && translations[lang][key]) {
+          el.innerHTML = translations[lang][key];
+        }
+      });
+    }
+    setLanguage(currentLang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+    });
   </script>
 </body>
 
