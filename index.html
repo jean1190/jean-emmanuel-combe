@@ -51,21 +51,21 @@
     }
 
     h1 {
-      font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-      font-weight: 300;
-      letter-spacing: -0.02em;
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      font-weight: 400;
+      letter-spacing: 0.02em;
       margin: 0;
       text-align: center;
-      padding: 0 1rem;
+      padding: 1rem 2rem;
       opacity: 0;
       transform: translateY(10px);
       animation: fadeIn 1.5s ease-out 0.5s forwards;
 
-      /* Effet de masquage subtil */
-      background: linear-gradient(45deg, #000, #444);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
+      /* Fond semi-transparent pour lisibilité */
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 4px;
+      color: #1a1a1a;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     }
 
     /* Language Toggle */
