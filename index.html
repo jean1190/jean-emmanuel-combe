@@ -13,10 +13,7 @@
 
   <style>
     :root {
-      --bg-color: #fcfcfc;
       --text-color: #1a1a1a;
-      --accent-color: #000000;
-      --grid-color: rgba(0, 0, 0, 0.05);
     }
 
     * {
@@ -30,33 +27,27 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: var(--bg-color);
       color: var(--text-color);
       font-family: 'Inter', sans-serif;
     }
 
-    /* Canvas pour la constellation */
-    #constellation {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
+    /* Image de fond */
+    body {
+      background-image: url('fond.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
     }
 
     .container {
       position: relative;
       height: 100vh;
-      /* Fallback */
       height: 100dvh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 1;
-      pointer-events: none;
-      /* Laisser la souris interagir avec le canvas */
     }
 
     h1 {
@@ -65,6 +56,7 @@
       letter-spacing: -0.02em;
       margin: 0;
       text-align: center;
+      padding: 0 1rem;
       opacity: 0;
       transform: translateY(10px);
       animation: fadeIn 1.5s ease-out 0.5s forwards;
@@ -123,142 +115,11 @@
     <button class="lang-btn" data-lang="en" title="English">🇬🇧</button>
   </div>
 
-  <canvas id="constellation"></canvas>
-
   <div class="container">
     <h1 data-i18n="quote">Il n'y a que le chemin qui est réel.</h1>
   </div>
 
   <script>
-    const canvas = document.getElementById('constellation');
-    const ctx = canvas.getContext('2d');
-
-    let width, height;
-    let particles = [];
-    const particleCount = 60; // Nombre de points
-    const connectionDistance = 150; // Distance de connexion
-    const mouseDistance = 200; // Rayon d'interaction souris
-
-    let mouse = { x: null, y: null };
-
-    // Redimensionnement
-    function resize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-
-    // Classe Particule
-    class Particle {
-      constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.5; // Vitesse lente
-        this.vy = (Math.random() - 0.5) * 0.5;
-        this.size = Math.random() * 1.5 + 0.5;
-      }
-
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-
-        // Rebond sur les bords
-        if (this.x < 0 || this.x > width) this.vx *= -1;
-        if (this.y < 0 || this.y > height) this.vy *= -1;
-      }
-
-      draw() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    // Initialisation
-    for (let i = 0; i < particleCount; i++) {
-      particles.push(new Particle());
-    }
-
-    // Gestion souris
-    window.addEventListener('mousemove', (e) => {
-      mouse.x = e.x;
-      mouse.y = e.y;
-    });
-
-    // Gestion tactile
-    window.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      mouse.x = e.touches[0].clientX;
-      mouse.y = e.touches[0].clientY;
-    }, { passive: false });
-
-    window.addEventListener('mouseleave', () => {
-      mouse.x = null;
-      mouse.y = null;
-    });
-
-    window.addEventListener('touchend', () => {
-      mouse.x = null;
-      mouse.y = null;
-    });
-
-    // Animation Loop
-    function animate() {
-      ctx.clearRect(0, 0, width, height);
-
-      // Mise à jour et dessin des particules
-      particles.forEach(p => {
-        p.update();
-        p.draw();
-      });
-
-      // Connexions
-      connectParticles();
-
-      requestAnimationFrame(animate);
-    }
-
-    function connectParticles() {
-      for (let a = 0; a < particles.length; a++) {
-        for (let b = a; b < particles.length; b++) {
-          const dx = particles[a].x - particles[b].x;
-          const dy = particles[a].y - particles[b].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < connectionDistance) {
-            const opacity = 1 - (distance / connectionDistance);
-            ctx.strokeStyle = `rgba(0, 0, 0, ${opacity * 0.1})`; // Traits très légers entre eux
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(particles[a].x, particles[a].y);
-            ctx.lineTo(particles[b].x, particles[b].y);
-            ctx.stroke();
-          }
-        }
-
-        // Connexion à la souris (Le Chemin)
-        if (mouse.x != null) {
-          const dx = particles[a].x - mouse.x;
-          const dy = particles[a].y - mouse.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < mouseDistance) {
-            const opacity = 1 - (distance / mouseDistance);
-            ctx.strokeStyle = `rgba(0, 0, 0, ${opacity * 0.4})`; // Traits plus marqués vers la souris
-            ctx.lineWidth = 0.8;
-            ctx.beginPath();
-            ctx.moveTo(particles[a].x, particles[a].y);
-            ctx.lineTo(mouse.x, mouse.y);
-            ctx.stroke();
-          }
-        }
-      }
-    }
-
-    animate();
-
     // --- i18n ---
     const translations = {
       fr: { "quote": "Il n'y a que le chemin qui est réel." },
