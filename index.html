@@ -75,7 +75,7 @@
     }
 
     h1 {
-      font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+      font-size: clamp(1.5rem, 1rem + 1.6vw, 3.4rem);
       font-weight: 300;
       letter-spacing: 0.05em;
       margin: 0;
@@ -83,7 +83,8 @@
       padding: 0 2rem;
       opacity: 0;
       transform: translateY(10px);
-      animation: fadeIn 1.5s ease-out 0.5s forwards;
+      animation: fadeIn 1.2s ease-out 0.1s forwards;
+      position: relative;
 
       color: #2a2520;
       text-shadow:
@@ -94,30 +95,36 @@
 
     .lang-toggle {
       position: fixed;
-      top: 1rem;
-      right: 1rem;
+      top: clamp(0.6rem, 1.2vw, 1.6rem);
+      right: clamp(0.6rem, 1.2vw, 1.6rem);
       display: flex;
-      gap: 0.35rem;
+      gap: 0.1rem;
       z-index: 100;
-      font-size: 0.72rem;
-      letter-spacing: 0.12em;
-      color: #6b6258;
+      font-size: clamp(0.78rem, 0.6rem + 0.25vw, 1rem);
+      letter-spacing: 0.08em;
+      color: #4a4239;
     }
 
     .lang-btn {
       background: none;
       border: none;
       cursor: pointer;
-      opacity: 0.45;
+      opacity: 0.5;
       transition: opacity 0.3s ease;
       font: inherit;
       color: inherit;
-      text-transform: uppercase;
-      padding: 0.2rem;
+      padding: 0.5rem;
+      min-width: 2.2rem;
+      min-height: 2.2rem;
     }
 
     .lang-btn:hover {
       opacity: 0.8;
+    }
+
+    .lang-btn:focus-visible {
+        outline: 1px solid rgba(201, 164, 92, 0.8);
+        outline-offset: 2px;
     }
 
     .lang-btn.active {
@@ -135,6 +142,7 @@
       outline: none;
     }
 
+    .passage:hover,
     .passage:focus-visible {
       box-shadow: 0 0 0 1px rgba(201, 164, 92, 0.7);
     }
@@ -163,7 +171,7 @@
     <h1 data-i18n="quote">Il n'y a que le chemin qui est réel.</h1>
   </div>
 
-  <a class="passage" href="https://aurore-combe.fr" aria-label="Aurore Combe"></a>
+  <a class="passage" href="https://aurore-combe.fr" aria-label="Aurore Combe" title="Aurore Combe"></a>
 
   <script>
     // --- i18n ---
@@ -190,7 +198,7 @@
     }
     setLanguage(currentLang);
     document.querySelectorAll('.lang-btn').forEach(btn => {
-      btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+      btn.addEventListener('click', () => { setLanguage(btn.dataset.lang); layout(); });
     });
 
     // --- Le tableau vivant ---
@@ -257,6 +265,23 @@
       }
       passage.style.left = exit[0] + 'px';
       passage.style.top = exit[1] + 'px';
+
+      // The sentence rests on the path instead of being crossed by it.
+      h1.style.top = '0px';
+      const box = h1.getBoundingClientRect();
+      const probe = Math.min(box.right, w);
+      const lift = Math.min(0, threadY(probe) - 14 - box.bottom);
+      h1.style.top = Math.max(lift, -h * 0.25) + 'px';
+    }
+
+    function threadY(x) {
+      for (let i = 1; i < path.length; i++) {
+        if (path[i][0] >= x) {
+          const a = path[i - 1], b = path[i];
+          return a[1] + (b[1] - a[1]) * (x - a[0]) / ((b[0] - a[0]) || 1);
+        }
+      }
+      return path[path.length - 1][1];
     }
 
     function pointAt(u) {
@@ -349,6 +374,7 @@
     }
 
     layout();
+    document.fonts.ready.then(layout);
     addEventListener('resize', layout);
     if (!still) requestAnimationFrame(frame);
   </script>
