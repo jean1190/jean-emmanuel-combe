@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
+<!-- ce fil continue : aurore-combe.fr -->
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jean-Emmanuel Combe</title>
+  <meta name="description" content="Il n'y a que le chemin qui est réel.">
+  <meta name="theme-color" content="#efeae1">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23efeae1'/%3E%3Cpath d='M0 20h32v12H0z' fill='%23a58d6e'/%3E%3Cpath d='M2 30L30 2' stroke='%23c9a45c' stroke-width='1.6'/%3E%3C/svg%3E">
 
-  <!-- Import Inter pour la précision géométrique -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -14,6 +17,7 @@
   <style>
     :root {
       --text-color: #1a1a1a;
+      --halo: 255, 255, 255;
     }
 
     * {
@@ -31,12 +35,32 @@
       font-family: 'Inter', sans-serif;
     }
 
-    /* Image de fond */
     body {
+      background-color: #efeae1;
       background-image: url('fond.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+    }
+
+    /* Couches vivantes : souffle, heure, influx le long du fil */
+    .souffle,
+    .heure,
+    #vivant {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .souffle {
+      background: radial-gradient(ellipse at 50% 30%, rgba(255, 252, 244, 1) 0%, rgba(255, 252, 244, 0) 70%);
+      opacity: 0;
+    }
+
+    .heure {
+      background: linear-gradient(to bottom, rgba(38, 34, 44, 1), rgba(30, 24, 18, 1));
+      mix-blend-mode: multiply;
+      opacity: 0;
     }
 
     .container {
@@ -61,43 +85,58 @@
       transform: translateY(10px);
       animation: fadeIn 1.5s ease-out 0.5s forwards;
 
-      /* Texte sombre avec halo lumineux pour lisibilité */
       color: #2a2520;
       text-shadow:
-        0 0 20px rgba(255, 255, 255, 0.9),
-        0 0 40px rgba(255, 255, 255, 0.7),
-        0 0 60px rgba(255, 255, 255, 0.5);
+        0 0 20px rgba(var(--halo), 0.9),
+        0 0 40px rgba(var(--halo), 0.7),
+        0 0 60px rgba(var(--halo), 0.5);
     }
 
-    /* Language Toggle */
     .lang-toggle {
       position: fixed;
       top: 1rem;
       right: 1rem;
       display: flex;
-      gap: 0.5rem;
+      gap: 0.35rem;
       z-index: 100;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: #6b6258;
     }
 
     .lang-btn {
       background: none;
       border: none;
       cursor: pointer;
-      opacity: 0.4;
-      transition: all 0.3s ease;
-      font-size: 1.5rem;
-      padding: 0;
-      line-height: 1;
+      opacity: 0.45;
+      transition: opacity 0.3s ease;
+      font: inherit;
+      color: inherit;
+      text-transform: uppercase;
+      padding: 0.2rem;
     }
 
     .lang-btn:hover {
       opacity: 0.8;
-      transform: scale(1.1);
     }
 
     .lang-btn.active {
       opacity: 1;
-      filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.3));
+    }
+
+    /* L'extrémité du fil : un passage pour qui le suit jusqu'au bout */
+    .passage {
+      position: fixed;
+      width: 44px;
+      height: 44px;
+      margin: -22px 0 0 -22px;
+      z-index: 50;
+      border-radius: 50%;
+      outline: none;
+    }
+
+    .passage:focus-visible {
+      box-shadow: 0 0 0 1px rgba(201, 164, 92, 0.7);
     }
 
     @keyframes fadeIn {
@@ -111,14 +150,20 @@
 
 <body>
 
+  <div class="souffle" aria-hidden="true"></div>
+  <div class="heure" aria-hidden="true"></div>
+  <canvas id="vivant" aria-hidden="true"></canvas>
+
   <div class="lang-toggle">
-    <button class="lang-btn active" data-lang="fr" title="Français">🇫🇷</button>
-    <button class="lang-btn" data-lang="en" title="English">🇬🇧</button>
+    <button class="lang-btn active" data-lang="fr" title="Français">fr</button>
+    <button class="lang-btn" data-lang="en" title="English">en</button>
   </div>
 
   <div class="container">
     <h1 data-i18n="quote">Il n'y a que le chemin qui est réel.</h1>
   </div>
+
+  <a class="passage" href="https://aurore-combe.fr" aria-label="Aurore Combe"></a>
 
   <script>
     // --- i18n ---
@@ -147,6 +192,165 @@
     document.querySelectorAll('.lang-btn').forEach(btn => {
       btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
     });
+
+    // --- Le tableau vivant ---
+    // Both pages read the same wall clock: the breath (16 s) and the light's
+    // journey (48 s) are shared with aurore-combe.fr, phase for phase.
+    const BREATH_MS = 16000;
+    const CYCLE_MS = 48000;
+    const JOURNEY = { start: 10000, end: 24000 };
+
+    const IMG_W = 3168, IMG_H = 1344;
+    const THREAD = [
+      [0, 1346], [200, 1260], [360, 1193], [520, 1124], [680, 1047], [840, 976],
+      [1000, 907], [1160, 845], [1320, 748], [1480, 720], [1640, 659], [1800, 596],
+      [1960, 530], [2120, 470], [2280, 407], [2440, 331], [2600, 256], [2760, 188],
+      [2920, 119], [3080, 44], [3168, 6]
+    ];
+    // Neuron bodies, and the moment of the journey that wakes each one.
+    const NEURONS = [
+      { x: 2180, y: 205, at: 0.74, r: 120 },
+      { x: 1560, y: 130, at: 0.80, r: 150 },
+      { x: 1890, y: 18, at: 0.86, r: 110 },
+      { x: 1025, y: 195, at: 0.92, r: 140 }
+    ];
+
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const canvas = document.getElementById('vivant');
+    const ctx = canvas.getContext('2d');
+    const souffle = document.querySelector('.souffle');
+    const heure = document.querySelector('.heure');
+    const passage = document.querySelector('.passage');
+    const h1 = document.querySelector('h1');
+
+    let view = { s: 1, ox: 0, oy: 0, w: 0, h: 0 };
+    let path = [], lengths = [], total = 0;
+
+    function toScreen([x, y]) {
+      return [view.ox + x * view.s, view.oy + y * view.s];
+    }
+
+    function layout() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = innerWidth, h = innerHeight;
+      const s = Math.max(w / IMG_W, h / IMG_H);
+      view = { s, ox: (w - IMG_W * s) / 2, oy: (h - IMG_H * s) / 2, w, h };
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      path = THREAD.map(toScreen);
+      lengths = [0];
+      for (let i = 1; i < path.length; i++) {
+        const dx = path[i][0] - path[i - 1][0], dy = path[i][1] - path[i - 1][1];
+        lengths.push(lengths[i - 1] + Math.hypot(dx, dy));
+      }
+      total = lengths[lengths.length - 1];
+
+      // The passage sits where the thread leaves the visible sky.
+      let exit = pointAt(1);
+      for (let u = 1; u > 0; u -= 0.002) {
+        const [x, y] = pointAt(u);
+        if (x <= w - 16 && y >= 16) { exit = [x, y]; break; }
+      }
+      passage.style.left = exit[0] + 'px';
+      passage.style.top = exit[1] + 'px';
+    }
+
+    function pointAt(u) {
+      const d = u * total;
+      let i = 1;
+      while (i < lengths.length - 1 && lengths[i] < d) i++;
+      const seg = lengths[i] - lengths[i - 1] || 1;
+      const t = (d - lengths[i - 1]) / seg;
+      const a = path[i - 1], b = path[i];
+      return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    }
+
+    function smooth(x) {
+      x = Math.min(1, Math.max(0, x));
+      return x * x * (3 - 2 * x);
+    }
+
+    // Local night quietly dims the sky; dawn belongs to the other page.
+    function nightWeight(date) {
+      const h = date.getHours() + date.getMinutes() / 60;
+      const dusk = smooth((h - 19.5) / 3), dawn = 1 - smooth((h - 5) / 3);
+      return Math.max(h >= 12 ? dusk : 0, h < 12 ? dawn : 0);
+    }
+
+    function drawPulse(u, strength) {
+      const head = pointAt(u);
+      const tailLen = 0.09;
+      const steps = 22;
+      ctx.lineCap = 'round';
+      for (let k = 0; k < steps; k++) {
+        const u0 = u - tailLen * (k + 1) / steps, u1 = u - tailLen * k / steps;
+        if (u1 <= 0) break;
+        const p0 = pointAt(Math.max(0, u0)), p1 = pointAt(u1);
+        const fade = (1 - k / steps) ** 2;
+        ctx.strokeStyle = `rgba(244, 206, 128, ${0.85 * fade * strength})`;
+        ctx.lineWidth = Math.max(1.2, 6 * view.s) * (0.6 + 0.4 * fade);
+        ctx.beginPath();
+        ctx.moveTo(p0[0], p0[1]);
+        ctx.lineTo(p1[0], p1[1]);
+        ctx.stroke();
+      }
+      const g = ctx.createRadialGradient(head[0], head[1], 0, head[0], head[1], 26);
+      g.addColorStop(0, `rgba(255, 236, 190, ${0.95 * strength})`);
+      g.addColorStop(0.3, `rgba(240, 198, 118, ${0.5 * strength})`);
+      g.addColorStop(1, 'rgba(240, 198, 118, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(head[0], head[1], 26, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawNeuron(n, glow) {
+      const [x, y] = toScreen([n.x, n.y]);
+      const r = n.r * view.s * 1.6 + 18;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(238, 208, 150, ${0.34 * glow})`);
+      g.addColorStop(0.4, `rgba(242, 222, 180, ${0.16 * glow})`);
+      g.addColorStop(1, 'rgba(242, 222, 180, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function frame() {
+      const now = Date.now();
+      const breath = 0.5 - 0.5 * Math.cos(2 * Math.PI * (now % BREATH_MS) / BREATH_MS);
+      souffle.style.opacity = (0.05 + 0.1 * breath).toFixed(3);
+      heure.style.opacity = (0.22 * nightWeight(new Date(now))).toFixed(3);
+
+      ctx.clearRect(0, 0, view.w, view.h);
+      const phase = now % CYCLE_MS;
+      const u = (phase - JOURNEY.start) / (JOURNEY.end - JOURNEY.start);
+      let warmth = 0;
+      if (u > 0 && u < 1.12) {
+        const eased = smooth(Math.min(u, 1) * 0.94 + 0.03);
+        const strength = u < 1 ? smooth(u / 0.08) : 1 - smooth((u - 1) / 0.12);
+        if (u < 1) drawPulse(eased, strength);
+        warmth = Math.exp(-(((eased - 0.5) / 0.09) ** 2));
+      }
+      if (u > 0) {
+        for (const n of NEURONS) {
+          const dt = u - n.at;
+          if (dt > -0.02 && dt < 0.5) drawNeuron(n, smooth(dt / 0.06) * (1 - smooth((dt - 0.06) / 0.4)));
+        }
+      }
+      const halo = [255, 255 - 10 * warmth, 255 - 34 * warmth].map(Math.round).join(', ');
+      h1.style.setProperty('--halo', halo);
+      requestAnimationFrame(frame);
+    }
+
+    layout();
+    addEventListener('resize', layout);
+    if (!still) requestAnimationFrame(frame);
   </script>
 </body>
 
