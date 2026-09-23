@@ -232,7 +232,7 @@
     const h1 = document.querySelector('h1');
 
     let view = { s: 1, ox: 0, oy: 0, w: 0, h: 0 };
-    let path = [], lengths = [], total = 0;
+    let path = [], lengths = [], total = 0, exitU = 1, exitPoint = [0, 0];
 
     function toScreen([x, y]) {
       return [view.ox + x * view.s, view.oy + y * view.s];
@@ -259,10 +259,12 @@
 
       // The passage sits where the thread leaves the visible sky.
       let exit = pointAt(1);
+      exitU = 1;
       for (let u = 1; u > 0; u -= 0.002) {
         const [x, y] = pointAt(u);
-        if (x <= w - 16 && y >= 16) { exit = [x, y]; break; }
+        if (x <= w - 16 && y >= 16) { exit = [x, y]; exitU = u; break; }
       }
+      exitPoint = exit;
       passage.style.left = exit[0] + 'px';
       passage.style.top = exit[1] + 'px';
 
@@ -333,6 +335,22 @@
       ctx.fill();
     }
 
+    function drawPassage(glow) {
+      const [x, y] = exitPoint;
+      ctx.strokeStyle = `rgba(214, 176, 96, ${0.7 * glow})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(x, y, 14 + 6 * glow, 0, Math.PI * 2);
+      ctx.stroke();
+      const g = ctx.createRadialGradient(x, y, 0, x, y, 22);
+      g.addColorStop(0, `rgba(255, 236, 190, ${0.6 * glow})`);
+      g.addColorStop(1, 'rgba(255, 236, 190, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, 22, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
     function drawNeuron(n, glow) {
       const [x, y] = toScreen([n.x, n.y]);
       const r = n.r * view.s * 1.6 + 18;
@@ -360,6 +378,10 @@
         const eased = smooth(Math.min(u, 1) * 0.94 + 0.03);
         const strength = u < 1 ? smooth(u / 0.08) : 1 - smooth((u - 1) / 0.12);
         if (u < 1) drawPulse(eased, strength);
+        // When the light reaches the edge, the passage glows once: a touch
+        // screen has no hover, but it can watch.
+        const past = eased - exitU;
+        if (past > -0.01 && past < 0.14) drawPassage(smooth((past + 0.01) / 0.03) * (1 - smooth((past - 0.02) / 0.12)));
         warmth = Math.exp(-(((eased - 0.5) / 0.09) ** 2));
       }
       if (u > 0) {
