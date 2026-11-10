@@ -114,11 +114,18 @@
       top: clamp(0.6rem, 1.2vw, 1.6rem);
       right: clamp(0.6rem, 1.2vw, 1.6rem);
       display: flex;
-      gap: 0.1rem;
+      align-items: center;
+      gap: 0.05rem;
       z-index: 100;
       font-size: clamp(0.78rem, 0.6rem + 0.25vw, 1rem);
       letter-spacing: 0.08em;
       color: #4a4239;
+    }
+
+    .lang-sep {
+      opacity: 0.35;
+      user-select: none;
+      pointer-events: none;
     }
 
     .lang-btn {
@@ -172,20 +179,35 @@
       font-size: clamp(0.68rem, 0.58rem + 0.2vw, 0.82rem);
       font-weight: 300;
       letter-spacing: 0.14em;
-      color: rgba(58, 48, 38, 0.55);
+      color: rgba(239, 234, 225, 0.62);
+      text-shadow: 0 1px 10px rgba(24, 19, 14, 0.55);
       text-decoration: none;
       transition: color 0.3s ease;
     }
 
     .cercle:hover,
     .cercle:focus-visible {
-      color: rgba(42, 37, 32, 0.9);
+      color: rgba(255, 248, 236, 0.95);
+    }
+
+    .cercle:focus-visible {
+      outline: 1px solid rgba(201, 164, 92, 0.7);
+      outline-offset: 4px;
+      border-radius: 2px;
     }
 
     @keyframes fadeIn {
       to {
         opacity: 1;
         transform: translateY(0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      h1 {
+        animation: none;
+        opacity: 1;
+        transform: none;
       }
     }
   </style>
@@ -197,14 +219,15 @@
   <div class="heure" aria-hidden="true"></div>
   <canvas id="vivant" aria-hidden="true"></canvas>
 
-  <div class="lang-toggle" aria-hidden="true">
-    <button class="lang-btn active" data-lang="fr" title="Français">fr</button>
-    <button class="lang-btn" data-lang="en" title="English">en</button>
-  </div>
+  <nav class="lang-toggle" aria-label="Langue">
+    <button type="button" class="lang-btn active" data-lang="fr" lang="fr" aria-pressed="true" title="Français">fr</button>
+    <span class="lang-sep" aria-hidden="true">·</span>
+    <button type="button" class="lang-btn" data-lang="en" lang="en" aria-pressed="false" title="English">en</button>
+  </nav>
 
   <main class="container">
     <h1 data-i18n="quote">Il n’y a que le chemin qui est réel.</h1>
-    <p style="margin:0"><a class="cercle" href="https://hunkaar.fr" rel="me">↔ hunkaar.fr</a></p>
+    <a class="cercle" href="https://hunkaar.fr" rel="me">↔ hunkaar.fr</a>
   </main>
 
   <a class="passage" href="https://aurore-combe.fr" aria-label="Aurore Combe" title="Aurore Combe"></a>
@@ -223,7 +246,9 @@
       localStorage.setItem('lang', lang);
       document.documentElement.lang = lang;
       document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.lang === lang);
+        const active = btn.dataset.lang === lang;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', String(active));
       });
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.dataset.i18n;
@@ -293,12 +318,15 @@
       }
       total = lengths[lengths.length - 1];
 
-      // The passage sits where the thread leaves the visible sky.
+      // The passage sits where the thread leaves the visible sky, clear of the language switch.
       let exit = pointAt(1);
       exitU = 1;
+      const langBox = document.querySelector('.lang-toggle').getBoundingClientRect();
       for (let u = 1; u > 0; u -= 0.002) {
         const [x, y] = pointAt(u);
-        if (x <= w - 16 && y >= 16) { exit = [x, y]; exitU = u; break; }
+        if (x <= w - 16 && y >= 16 && !(x > langBox.left - 18 && y < langBox.bottom + 18)) {
+          exit = [x, y]; exitU = u; break;
+        }
       }
       exitPoint = exit;
       passage.style.left = exit[0] + 'px';
@@ -310,6 +338,11 @@
       const probe = Math.min(box.right, w);
       const lift = Math.min(0, threadY(probe) - 14 - box.bottom);
       h1.style.top = Math.max(lift, -h * 0.25) + 'px';
+
+      if (still) {
+        ctx.clearRect(0, 0, w, h);
+        drawPassage(0.32);
+      }
     }
 
     function threadY(x) {
@@ -400,41 +433,64 @@
       ctx.fill();
     }
 
+    let lastSouffle = '', lastHeure = '', lastHalo = '', lastMinuteCheck = -1, canvasDirty = false;
+
     function frame() {
       const now = Date.now();
       const breath = 0.5 - 0.5 * Math.cos(2 * Math.PI * (now % BREATH_MS) / BREATH_MS);
-      souffle.style.opacity = (0.05 + 0.1 * breath).toFixed(3);
-      heure.style.opacity = (0.22 * nightWeight(new Date(now))).toFixed(3);
+      const nextSouffle = (0.05 + 0.1 * breath).toFixed(3);
+      if (nextSouffle !== lastSouffle) { souffle.style.opacity = nextSouffle; lastSouffle = nextSouffle; }
 
-      ctx.clearRect(0, 0, view.w, view.h);
+      if (now - lastMinuteCheck > 1000) {
+        lastMinuteCheck = now;
+        const nextHeure = (0.22 * nightWeight(new Date(now))).toFixed(3);
+        if (nextHeure !== lastHeure) { heure.style.opacity = nextHeure; lastHeure = nextHeure; }
+      }
+
       const phase = now % CYCLE_MS;
       const u = (phase - JOURNEY.start) / (JOURNEY.end - JOURNEY.start);
       let warmth = 0;
+      let drew = false;
+      if ((u > 0 && u < 1.44) || canvasDirty) {
+        ctx.clearRect(0, 0, view.w, view.h);
+      }
       if (u > 0 && u < 1.12) {
         const eased = smooth(Math.min(u, 1) * 0.94 + 0.03);
         const strength = u < 1 ? smooth(u / 0.08) : 1 - smooth((u - 1) / 0.12);
-        if (u < 1) drawPulse(eased, strength);
+        if (u < 1) { drawPulse(eased, strength); drew = true; }
         // When the light reaches the edge, the passage glows once: a touch
         // screen has no hover, but it can watch.
         const past = eased - exitU;
-        if (past > -0.01 && past < 0.14) drawPassage(smooth((past + 0.01) / 0.03) * (1 - smooth((past - 0.02) / 0.12)));
+        if (past > -0.01 && past < 0.14) {
+          drawPassage(smooth((past + 0.01) / 0.03) * (1 - smooth((past - 0.02) / 0.12)));
+          drew = true;
+        }
         warmth = Math.exp(-(((eased - 0.5) / 0.09) ** 2));
       }
-      if (u > 0) {
+      if (u > 0 && u < 1.44) {
         for (const n of NEURONS) {
           const dt = u - n.at;
-          if (dt > -0.02 && dt < 0.5) drawNeuron(n, smooth(dt / 0.06) * (1 - smooth((dt - 0.06) / 0.4)));
+          if (dt > -0.02 && dt < 0.5) {
+            drawNeuron(n, smooth(dt / 0.06) * (1 - smooth((dt - 0.06) / 0.4)));
+            drew = true;
+          }
         }
       }
+      canvasDirty = drew;
       const halo = [255, 255 - 10 * warmth, 255 - 34 * warmth].map(Math.round).join(', ');
-      h1.style.setProperty('--halo', halo);
+      if (halo !== lastHalo) { h1.style.setProperty('--halo', halo); lastHalo = halo; }
       requestAnimationFrame(frame);
     }
 
     layout();
     document.fonts.ready.then(layout);
     addEventListener('resize', layout);
-    if (!still) requestAnimationFrame(frame);
+    if (!still) {
+      requestAnimationFrame(frame);
+    } else {
+      souffle.style.opacity = '0.090';
+      heure.style.opacity = (0.22 * nightWeight(new Date())).toFixed(3);
+    }
   </script>
 </body>
 
