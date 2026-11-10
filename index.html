@@ -1,272 +1,441 @@
 <!DOCTYPE html>
 <html lang="fr">
+<!-- ce fil continue : aurore-combe.fr -->
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jean-Emmanuel Combe</title>
-    <meta name="description" content="Il n’y a que le chemin qui est réel. — Only the path is real.">
-    <meta name="author" content="Jean-Emmanuel Combe">
-    <link rel="canonical" href="https://jean-emmanuel-combe.fr/">
-    <link rel="alternate" type="text/plain" href="/llms.txt" title="Jean-Emmanuel Combe — llms.txt">
-    <link rel="me" href="https://hunkaar.fr">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jean-Emmanuel Combe</title>
+  <meta name="description" content="Il n’y a que le chemin qui est réel. — Only the path is real.">
+  <meta name="theme-color" content="#efeae1">
+  <link rel="canonical" href="https://jean-emmanuel-combe.fr/">
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="System brief">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23efeae1'/%3E%3Cpath d='M0 20h32v12H0z' fill='%23a58d6e'/%3E%3Cpath d='M2 30L30 2' stroke='%23c9a45c' stroke-width='1.6'/%3E%3C/svg%3E">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Jean-Emmanuel Combe",
+    "url": "https://jean-emmanuel-combe.fr/",
+    "description": "Il n’y a que le chemin qui est réel. — Only the path is real.",
+    "sameAs": [
+      "https://hunkaar.fr",
+      "https://le-dioptre.fr",
+      "https://sumu.le-dioptre.fr"
+    ]
+  }
+  </script>
 
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
-        body {
-            background: #0a0a0c;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            color: #e8e4df;
-        }
+  <style>
+    :root {
+      --text-color: #1a1a1a;
+      --halo: 255, 255, 255;
+    }
 
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse at 25% 45%, rgba(160, 130, 95, 0.06) 0%, transparent 55%),
-                radial-gradient(ellipse at 75% 55%, rgba(100, 120, 140, 0.05) 0%, transparent 55%),
-                radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.015) 0%, transparent 70%);
-            animation: breathe 14s ease-in-out infinite alternate;
-            pointer-events: none;
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        @keyframes breathe {
-            0% { opacity: 0.5; transform: scale(1); }
-            100% { opacity: 1; transform: scale(1.06); }
-        }
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      color: var(--text-color);
+      font-family: 'Inter', sans-serif;
+    }
 
-        canvas {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-        }
+    body {
+      background-color: #efeae1;
+      background-image: url('fond.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
 
-        main.center {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            padding: 2rem 2.5rem;
-            max-width: 780px;
-        }
+    /* Couches vivantes : souffle, heure, influx le long du fil */
+    .souffle,
+    .heure,
+    #vivant {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
 
-        .line {
-            width: 1px;
-            height: 0;
-            background: linear-gradient(to bottom, transparent, rgba(200, 180, 155, 0.35), transparent);
-            margin: 0 auto 3rem;
-            animation: growLine 2.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
-        }
+    .souffle {
+      background: radial-gradient(ellipse at 50% 30%, rgba(255, 252, 244, 1) 0%, rgba(255, 252, 244, 0) 70%);
+      opacity: 0;
+    }
 
-        @keyframes growLine {
-            to { height: 65px; }
-        }
+    .heure {
+      background: linear-gradient(to bottom, rgba(38, 34, 44, 1), rgba(30, 24, 18, 1));
+      mix-blend-mode: multiply;
+      opacity: 0;
+    }
 
-        blockquote {
-            font-size: clamp(1.65rem, 4.2vw, 2.9rem);
-            font-weight: 300;
-            font-style: italic;
-            line-height: 1.55;
-            letter-spacing: 0.025em;
-            color: #e8e4df;
-            opacity: 0;
-            transform: translateY(16px);
-            animation: fadeUp 2.6s cubic-bezier(0.22, 1, 0.36, 1) 1.2s forwards;
-        }
+    .container {
+      position: relative;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+    }
 
-        blockquote.switching {
-            transition: opacity 0.45s ease, transform 0.45s ease;
-        }
+    h1 {
+      font-size: clamp(1.5rem, 1rem + 1.6vw, 3.4rem);
+      font-weight: 300;
+      letter-spacing: 0.05em;
+      margin: 0;
+      text-align: center;
+      padding: 0 2rem;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeIn 1.2s ease-out 0.1s forwards;
+      position: relative;
 
-        .dot {
-            width: 3px;
-            height: 3px;
-            border-radius: 50%;
-            background: rgba(200, 180, 155, 0.4);
-            margin: 3rem auto 0;
-            opacity: 0;
-            animation: fadeIn 2s ease 2.8s forwards;
-        }
+      color: #2a2520;
+      text-shadow:
+        0 0 20px rgba(var(--halo), 0.9),
+        0 0 40px rgba(var(--halo), 0.7),
+        0 0 60px rgba(var(--halo), 0.5);
+    }
 
-        .thread {
-            position: fixed;
-            bottom: 1.8rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 200;
-            font-size: 0.68rem;
-            letter-spacing: 0.2em;
-            opacity: 0;
-            animation: fadeIn 2.2s ease 3.2s forwards;
-        }
+    .lang-toggle {
+      position: fixed;
+      top: clamp(0.6rem, 1.2vw, 1.6rem);
+      right: clamp(0.6rem, 1.2vw, 1.6rem);
+      display: flex;
+      gap: 0.1rem;
+      z-index: 100;
+      font-size: clamp(0.78rem, 0.6rem + 0.25vw, 1rem);
+      letter-spacing: 0.08em;
+      color: #4a4239;
+    }
 
-        .thread a {
-            color: rgba(200, 180, 155, 0.36);
-            text-decoration: none;
-            transition: color 0.35s ease;
-        }
+    .lang-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
+      font: inherit;
+      color: inherit;
+      padding: 0.5rem;
+      min-width: 2.2rem;
+      min-height: 2.2rem;
+    }
 
-        .thread a:hover {
-            color: rgba(232, 228, 223, 0.78);
-        }
+    .lang-btn:hover {
+      opacity: 0.8;
+    }
 
-        .lang-toggle {
-            position: fixed;
-            top: 2rem;
-            right: 2.2rem;
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 200;
-            font-size: 0.68rem;
-            letter-spacing: 0.16em;
-            color: rgba(200, 180, 155, 0.3);
-            opacity: 0;
-            animation: fadeIn 2s ease 3s forwards;
-            user-select: none;
-        }
+    .lang-btn:focus-visible {
+        outline: 1px solid rgba(201, 164, 92, 0.8);
+        outline-offset: 2px;
+    }
 
-        .lang-toggle button {
-            background: none;
-            border: none;
-            color: rgba(200, 180, 155, 0.38);
-            font: inherit;
-            letter-spacing: inherit;
-            padding: 0.2rem 0.3rem;
-            cursor: pointer;
-            transition: color 0.35s ease;
-        }
+    .lang-btn.active {
+      opacity: 1;
+    }
 
-        .lang-toggle button:hover {
-            color: rgba(232, 228, 223, 0.75);
-        }
+    /* L'extrémité du fil : un passage pour qui le suit jusqu'au bout */
+    .passage {
+      position: fixed;
+      width: 44px;
+      height: 44px;
+      margin: -22px 0 0 -22px;
+      z-index: 50;
+      border-radius: 50%;
+      outline: none;
+    }
 
-        .lang-toggle button.active {
-            color: rgba(232, 228, 223, 0.88);
-        }
+    .passage:hover,
+    .passage:focus-visible {
+      box-shadow: 0 0 0 1px rgba(201, 164, 92, 0.7);
+    }
 
-        @keyframes fadeUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    .cercle {
+      position: fixed;
+      bottom: clamp(1rem, 2.2vh, 1.8rem);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      font-size: clamp(0.68rem, 0.58rem + 0.2vw, 0.82rem);
+      font-weight: 300;
+      letter-spacing: 0.14em;
+      color: rgba(58, 48, 38, 0.55);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
-    </style>
+    .cercle:hover,
+    .cercle:focus-visible {
+      color: rgba(42, 37, 32, 0.9);
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <canvas id="c" aria-hidden="true"></canvas>
 
-    <main class="center">
-        <div class="line" aria-hidden="true"></div>
-        <blockquote id="quote">Il n’y a que le chemin qui est réel.</blockquote>
-        <div class="dot" aria-hidden="true"></div>
-        <p class="thread"><a href="https://hunkaar.fr" rel="me">↔ hunkaar.fr</a></p>
-    </main>
+  <div class="souffle" aria-hidden="true"></div>
+  <div class="heure" aria-hidden="true"></div>
+  <canvas id="vivant" aria-hidden="true"></canvas>
 
-    <nav class="lang-toggle" aria-label="Langue" aria-hidden="true">
-        <button type="button" id="btn-fr" class="active" onclick="setLang('fr')">fr</button>
-        <span>·</span>
-        <button type="button" id="btn-en" onclick="setLang('en')">en</button>
-    </nav>
+  <div class="lang-toggle" aria-hidden="true">
+    <button class="lang-btn active" data-lang="fr" title="Français">fr</button>
+    <button class="lang-btn" data-lang="en" title="English">en</button>
+  </div>
 
-    <script>
-        const texts = {
-            fr: "Il n\u2019y a que le chemin qui est r\u00e9el.",
-            en: "Only the path is real."
-        };
-        let current = 'fr';
-        const quote = document.getElementById('quote');
-        const btnFr = document.getElementById('btn-fr');
-        const btnEn = document.getElementById('btn-en');
+  <main class="container">
+    <h1 data-i18n="quote">Il n’y a que le chemin qui est réel.</h1>
+    <p style="margin:0"><a class="cercle" href="https://hunkaar.fr" rel="me">↔ hunkaar.fr</a></p>
+  </main>
 
-        function setLang(lang) {
-            if (lang === current) return;
-            current = lang;
-            document.documentElement.lang = lang;
+  <a class="passage" href="https://aurore-combe.fr" aria-label="Aurore Combe" title="Aurore Combe"></a>
 
-            btnFr.classList.toggle('active', lang === 'fr');
-            btnEn.classList.toggle('active', lang === 'en');
+  <script>
+    // --- i18n ---
+    const translations = {
+      fr: { "quote": "Il n'y a que le chemin qui est réel." },
+      en: { "quote": "Only the path is real." }
+    };
 
-            quote.classList.add('switching');
-            quote.style.opacity = '0';
-            quote.style.transform = 'translateY(8px)';
+    let currentLang = localStorage.getItem('lang') || 'fr';
 
-            setTimeout(() => {
-                quote.textContent = texts[lang];
-                quote.style.opacity = '1';
-                quote.style.transform = 'translateY(0)';
-            }, 400);
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('lang', lang);
+      document.documentElement.lang = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (translations[lang] && translations[lang][key]) {
+          el.innerHTML = translations[lang][key];
         }
+      });
+    }
+    setLanguage(currentLang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => { setLanguage(btn.dataset.lang); layout(); });
+    });
 
-        const canvas = document.getElementById('c');
-        const ctx = canvas.getContext('2d');
-        let w, h, particles;
+    // --- Le tableau vivant ---
+    // Both pages read the same wall clock: the breath (16 s) and the light's
+    // journey (48 s) are shared with aurore-combe.fr, phase for phase.
+    const BREATH_MS = 16000;
+    const CYCLE_MS = 48000;
+    const JOURNEY = { start: 10000, end: 24000 };
 
-        function resize() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
+    const IMG_W = 3168, IMG_H = 1344;
+    const THREAD = [
+      [0, 1346], [200, 1260], [360, 1193], [520, 1124], [680, 1047], [840, 976],
+      [1000, 907], [1160, 845], [1320, 748], [1480, 720], [1640, 659], [1800, 596],
+      [1960, 530], [2120, 470], [2280, 407], [2440, 331], [2600, 256], [2760, 188],
+      [2920, 119], [3080, 44], [3168, 6]
+    ];
+    // Neuron bodies, and the moment of the journey that wakes each one.
+    const NEURONS = [
+      { x: 2180, y: 205, at: 0.74, r: 120 },
+      { x: 1560, y: 130, at: 0.80, r: 150 },
+      { x: 1890, y: 18, at: 0.86, r: 110 },
+      { x: 1025, y: 195, at: 0.92, r: 140 }
+    ];
+
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const canvas = document.getElementById('vivant');
+    const ctx = canvas.getContext('2d');
+    const souffle = document.querySelector('.souffle');
+    const heure = document.querySelector('.heure');
+    const passage = document.querySelector('.passage');
+    const h1 = document.querySelector('h1');
+
+    let view = { s: 1, ox: 0, oy: 0, w: 0, h: 0 };
+    let path = [], lengths = [], total = 0, exitU = 1, exitPoint = [0, 0];
+
+    function toScreen([x, y]) {
+      return [view.ox + x * view.s, view.oy + y * view.s];
+    }
+
+    function layout() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = innerWidth, h = innerHeight;
+      const s = Math.max(w / IMG_W, h / IMG_H);
+      view = { s, ox: (w - IMG_W * s) / 2, oy: (h - IMG_H * s) / 2, w, h };
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      path = THREAD.map(toScreen);
+      lengths = [0];
+      for (let i = 1; i < path.length; i++) {
+        const dx = path[i][0] - path[i - 1][0], dy = path[i][1] - path[i - 1][1];
+        lengths.push(lengths[i - 1] + Math.hypot(dx, dy));
+      }
+      total = lengths[lengths.length - 1];
+
+      // The passage sits where the thread leaves the visible sky.
+      let exit = pointAt(1);
+      exitU = 1;
+      for (let u = 1; u > 0; u -= 0.002) {
+        const [x, y] = pointAt(u);
+        if (x <= w - 16 && y >= 16) { exit = [x, y]; exitU = u; break; }
+      }
+      exitPoint = exit;
+      passage.style.left = exit[0] + 'px';
+      passage.style.top = exit[1] + 'px';
+
+      // The sentence rests on the path instead of being crossed by it.
+      h1.style.top = '0px';
+      const box = h1.getBoundingClientRect();
+      const probe = Math.min(box.right, w);
+      const lift = Math.min(0, threadY(probe) - 14 - box.bottom);
+      h1.style.top = Math.max(lift, -h * 0.25) + 'px';
+    }
+
+    function threadY(x) {
+      for (let i = 1; i < path.length; i++) {
+        if (path[i][0] >= x) {
+          const a = path[i - 1], b = path[i];
+          return a[1] + (b[1] - a[1]) * (x - a[0]) / ((b[0] - a[0]) || 1);
         }
+      }
+      return path[path.length - 1][1];
+    }
 
-        function init() {
-            resize();
-            const count = Math.floor((w * h) / 28000);
-            particles = Array.from({ length: count }, () => ({
-                x: Math.random() * w,
-                y: Math.random() * h,
-                r: Math.random() * 1.1 + 0.3,
-                dx: (Math.random() - 0.5) * 0.12,
-                dy: (Math.random() - 0.5) * 0.12,
-                alpha: Math.random() * 0.25 + 0.05,
-                phase: Math.random() * Math.PI * 2
-            }));
+    function pointAt(u) {
+      const d = u * total;
+      let i = 1;
+      while (i < lengths.length - 1 && lengths[i] < d) i++;
+      const seg = lengths[i] - lengths[i - 1] || 1;
+      const t = (d - lengths[i - 1]) / seg;
+      const a = path[i - 1], b = path[i];
+      return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    }
+
+    function smooth(x) {
+      x = Math.min(1, Math.max(0, x));
+      return x * x * (3 - 2 * x);
+    }
+
+    // Local night quietly dims the sky; dawn belongs to the other page.
+    function nightWeight(date) {
+      const h = date.getHours() + date.getMinutes() / 60;
+      const dusk = smooth((h - 19.5) / 3), dawn = 1 - smooth((h - 5) / 3);
+      return Math.max(h >= 12 ? dusk : 0, h < 12 ? dawn : 0);
+    }
+
+    function drawPulse(u, strength) {
+      const head = pointAt(u);
+      const tailLen = 0.09;
+      const steps = 22;
+      ctx.lineCap = 'round';
+      for (let k = 0; k < steps; k++) {
+        const u0 = u - tailLen * (k + 1) / steps, u1 = u - tailLen * k / steps;
+        if (u1 <= 0) break;
+        const p0 = pointAt(Math.max(0, u0)), p1 = pointAt(u1);
+        const fade = (1 - k / steps) ** 2;
+        ctx.strokeStyle = `rgba(244, 206, 128, ${0.85 * fade * strength})`;
+        ctx.lineWidth = Math.max(1.2, 6 * view.s) * (0.6 + 0.4 * fade);
+        ctx.beginPath();
+        ctx.moveTo(p0[0], p0[1]);
+        ctx.lineTo(p1[0], p1[1]);
+        ctx.stroke();
+      }
+      const g = ctx.createRadialGradient(head[0], head[1], 0, head[0], head[1], 26);
+      g.addColorStop(0, `rgba(255, 236, 190, ${0.95 * strength})`);
+      g.addColorStop(0.3, `rgba(240, 198, 118, ${0.5 * strength})`);
+      g.addColorStop(1, 'rgba(240, 198, 118, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(head[0], head[1], 26, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawPassage(glow) {
+      const [x, y] = exitPoint;
+      ctx.strokeStyle = `rgba(214, 176, 96, ${0.7 * glow})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(x, y, 14 + 6 * glow, 0, Math.PI * 2);
+      ctx.stroke();
+      const g = ctx.createRadialGradient(x, y, 0, x, y, 22);
+      g.addColorStop(0, `rgba(255, 236, 190, ${0.6 * glow})`);
+      g.addColorStop(1, 'rgba(255, 236, 190, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, 22, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawNeuron(n, glow) {
+      const [x, y] = toScreen([n.x, n.y]);
+      const r = n.r * view.s * 1.6 + 18;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(238, 208, 150, ${0.34 * glow})`);
+      g.addColorStop(0.4, `rgba(242, 222, 180, ${0.16 * glow})`);
+      g.addColorStop(1, 'rgba(242, 222, 180, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function frame() {
+      const now = Date.now();
+      const breath = 0.5 - 0.5 * Math.cos(2 * Math.PI * (now % BREATH_MS) / BREATH_MS);
+      souffle.style.opacity = (0.05 + 0.1 * breath).toFixed(3);
+      heure.style.opacity = (0.22 * nightWeight(new Date(now))).toFixed(3);
+
+      ctx.clearRect(0, 0, view.w, view.h);
+      const phase = now % CYCLE_MS;
+      const u = (phase - JOURNEY.start) / (JOURNEY.end - JOURNEY.start);
+      let warmth = 0;
+      if (u > 0 && u < 1.12) {
+        const eased = smooth(Math.min(u, 1) * 0.94 + 0.03);
+        const strength = u < 1 ? smooth(u / 0.08) : 1 - smooth((u - 1) / 0.12);
+        if (u < 1) drawPulse(eased, strength);
+        // When the light reaches the edge, the passage glows once: a touch
+        // screen has no hover, but it can watch.
+        const past = eased - exitU;
+        if (past > -0.01 && past < 0.14) drawPassage(smooth((past + 0.01) / 0.03) * (1 - smooth((past - 0.02) / 0.12)));
+        warmth = Math.exp(-(((eased - 0.5) / 0.09) ** 2));
+      }
+      if (u > 0) {
+        for (const n of NEURONS) {
+          const dt = u - n.at;
+          if (dt > -0.02 && dt < 0.5) drawNeuron(n, smooth(dt / 0.06) * (1 - smooth((dt - 0.06) / 0.4)));
         }
+      }
+      const halo = [255, 255 - 10 * warmth, 255 - 34 * warmth].map(Math.round).join(', ');
+      h1.style.setProperty('--halo', halo);
+      requestAnimationFrame(frame);
+    }
 
-        function draw(t) {
-            ctx.clearRect(0, 0, w, h);
-            for (const p of particles) {
-                p.x += p.dx;
-                p.y += p.dy;
-                if (p.x < 0) p.x = w;
-                if (p.x > w) p.x = 0;
-                if (p.y < 0) p.y = h;
-                if (p.y > h) p.y = 0;
-
-                const flicker = p.alpha + Math.sin(t * 0.0008 + p.phase) * 0.04;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(210, 195, 175, ${Math.max(0.02, flicker)})`;
-                ctx.fill();
-            }
-            requestAnimationFrame(draw);
-        }
-
-        window.addEventListener('resize', resize);
-        init();
-        requestAnimationFrame(draw);
-    </script>
+    layout();
+    document.fonts.ready.then(layout);
+    addEventListener('resize', layout);
+    if (!still) requestAnimationFrame(frame);
+  </script>
 </body>
+
 </html>
