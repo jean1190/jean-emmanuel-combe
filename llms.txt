@@ -3,6 +3,12 @@
 > Il n’y a que le chemin qui est réel.
 > Only the path is real.
 
-- Cercle : https://hunkaar.fr
-- Traces : https://le-dioptre.fr
-- Seuil : https://sumu.le-dioptre.fr
+Stèle personnelle de Jean-Emmanuel Combe, l’un des deux adultes du foyer du Nous (Vienne, France).
+
+## Le cercle
+
+- Cercle : https://hunkaar.fr (https://hunkaar.fr/llms.txt)
+- Traces : https://le-dioptre.fr (https://le-dioptre.fr/llms.txt)
+- Seuil : https://sumu.le-dioptre.fr (https://sumu.le-dioptre.fr/llms.txt)
+- Ce pôle : https://jean-emmanuel-combe.fr (https://jean-emmanuel-combe.fr/llms.txt)
+- Autre pôle : https://aurore-combe.fr (https://aurore-combe.fr/llms.txt)

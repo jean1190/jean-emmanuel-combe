@@ -21,7 +21,8 @@
     "sameAs": [
       "https://hunkaar.fr",
       "https://le-dioptre.fr",
-      "https://sumu.le-dioptre.fr"
+      "https://sumu.le-dioptre.fr",
+      "https://aurore-combe.fr"
     ]
   }
   </script>
@@ -172,25 +173,40 @@
 
     .cercle {
       position: fixed;
-      bottom: clamp(1rem, 2.2vh, 1.8rem);
+      bottom: clamp(0.8rem, 2vh, 1.5rem);
       left: 50%;
       transform: translateX(-50%);
+      width: min(46rem, calc(100vw - 7.5rem));
       z-index: 40;
-      font-size: clamp(0.68rem, 0.58rem + 0.2vw, 0.82rem);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.25rem 0.75rem;
+      font-size: clamp(0.62rem, 0.55rem + 0.18vw, 0.78rem);
       font-weight: 300;
-      letter-spacing: 0.14em;
-      color: rgba(239, 234, 225, 0.62);
-      text-shadow: 0 1px 10px rgba(24, 19, 14, 0.55);
+      letter-spacing: 0.11em;
+      line-height: 1.45;
+      text-align: center;
+      color: rgba(239, 234, 225, 0.68);
+      text-shadow: 0 1px 10px rgba(24, 19, 14, 0.65);
+    }
+
+    .cercle a {
+      color: inherit;
       text-decoration: none;
       transition: color 0.3s ease;
     }
 
-    .cercle:hover,
-    .cercle:focus-visible {
-      color: rgba(255, 248, 236, 0.95);
+    .cercle a.here {
+      color: rgba(255, 248, 236, 0.92);
     }
 
-    .cercle:focus-visible {
+    .cercle a:hover,
+    .cercle a:focus-visible {
+      color: rgba(255, 248, 236, 0.98);
+    }
+
+    .cercle a:focus-visible {
       outline: 1px solid rgba(201, 164, 92, 0.7);
       outline-offset: 4px;
       border-radius: 2px;
@@ -227,8 +243,15 @@
 
   <main class="container">
     <h1 data-i18n="quote">Il n’y a que le chemin qui est réel.</h1>
-    <a class="cercle" href="https://hunkaar.fr" rel="me">↔ hunkaar.fr</a>
   </main>
+
+  <footer class="cercle" aria-label="Le cercle">
+    <a href="https://hunkaar.fr/" rel="me">hunkaar.fr</a>
+    <a href="https://le-dioptre.fr/">le-dioptre.fr</a>
+    <a href="https://sumu.le-dioptre.fr/">sumu.le-dioptre.fr</a>
+    <a class="here" href="https://jean-emmanuel-combe.fr/" aria-current="page">jean-emmanuel-combe.fr</a>
+    <a href="https://aurore-combe.fr/" rel="me">aurore-combe.fr</a>
+  </footer>
 
   <a class="passage" href="https://aurore-combe.fr" aria-label="Aurore Combe" title="Aurore Combe"></a>
 
