@@ -241,6 +241,16 @@
       border-radius: 2px;
     }
 
+    @media (max-width: 600px) {
+      .cercle {
+        max-width: calc(100vw - 2rem);
+        padding: 0.38rem 0.85rem;
+        border-radius: 16px;
+        gap: 0.18rem 0.65rem;
+        font-size: 0.64rem;
+      }
+    }
+
     @keyframes fadeIn {
       to {
         opacity: 1;
@@ -350,6 +360,8 @@
 
     let view = { s: 1, ox: 0, oy: 0, w: 0, h: 0 };
     let path = [], lengths = [], total = 0, exitU = 1, exitPoint = [0, 0];
+    let visStartU = 0, visEndU = 1;
+    const arrivedAt = Date.now();
 
     function toScreen([x, y]) {
       return [view.ox + x * view.s, view.oy + y * view.s];
@@ -387,6 +399,24 @@
       exitPoint = exit;
       passage.style.left = exit[0] + 'px';
       passage.style.top = exit[1] + 'px';
+
+      // Visible span of the thread on narrow viewports so mobile visitors see the light systematically.
+      visStartU = 0;
+      visEndU = 1;
+      for (let u = 0; u <= 1; u += 0.005) {
+        const [x, y] = pointAt(u);
+        if (x >= -10 && x <= w + 10 && y >= -10 && y <= h + 10) {
+          visStartU = u;
+          break;
+        }
+      }
+      for (let u = 1; u >= visStartU; u -= 0.005) {
+        const [x, y] = pointAt(u);
+        if (x >= -10 && x <= w + 10 && y >= -10 && y <= h + 10) {
+          visEndU = u;
+          break;
+        }
+      }
 
       // The sentence rests on the path instead of being crossed by it.
       h1.style.top = '0px';
@@ -505,9 +535,15 @@
 
       const phase = now % CYCLE_MS;
       const u = (phase - JOURNEY.start) / (JOURNEY.end - JOURNEY.start);
+      const narrow = (visEndU - visStartU) < 0.52;
+      // On narrow/mobile screens, the full 48s thread is mostly off-screen; run a visible crossing on arrival and each 16s breath.
+      const arrivalT = (now - arrivedAt - 900) / 3600;
+      const breathPhase = (now % BREATH_MS) / BREATH_MS;
+      const breathT = (breathPhase - 0.12) / 0.28;
+      const hasNarrowPulse = narrow && ((arrivalT > 0 && arrivalT < 1) || (breathT > 0 && breathT < 1));
       let warmth = 0;
       let drew = false;
-      if ((u > 0 && u < 1.44) || canvasDirty) {
+      if ((u > 0 && u < 1.44) || hasNarrowPulse || canvasDirty) {
         ctx.clearRect(0, 0, view.w, view.h);
       }
       if (u > 0 && u < 1.12) {
@@ -522,6 +558,16 @@
           drew = true;
         }
         warmth = Math.exp(-(((eased - 0.5) / 0.09) ** 2));
+      } else if (hasNarrowPulse) {
+        const t = (arrivalT > 0 && arrivalT < 1) ? arrivalT : breathT;
+        const eased = visStartU + (visEndU - visStartU) * smooth(t);
+        const strength = smooth(t / 0.14) * (1 - smooth((t - 0.82) / 0.18));
+        drawPulse(eased, strength);
+        drew = true;
+        if (t > 0.72) {
+          drawPassage(smooth((t - 0.72) / 0.14) * (1 - smooth((t - 0.86) / 0.14)) * 0.85);
+        }
+        warmth = Math.max(warmth, Math.exp(-(((t - 0.5) / 0.22) ** 2)));
       }
       if (u > 0 && u < 1.44) {
         for (const n of NEURONS) {
@@ -545,12 +591,18 @@
       requestAnimationFrame(frame);
       const lueur = document.querySelector('.lueur');
       if (lueur) {
-        addEventListener('pointermove', e => {
-          if (e.pointerType === 'touch') return;
+        let touchFade = 0;
+        const showGlow = e => {
           lueur.style.setProperty('--px', e.clientX + 'px');
           lueur.style.setProperty('--py', e.clientY + 'px');
           lueur.classList.add('active');
-        }, { passive: true });
+          if (e.pointerType === 'touch') {
+            clearTimeout(touchFade);
+            touchFade = setTimeout(() => lueur.classList.remove('active'), 1800);
+          }
+        };
+        addEventListener('pointermove', showGlow, { passive: true });
+        addEventListener('pointerdown', showGlow, { passive: true });
         document.addEventListener('pointerleave', () => lueur.classList.remove('active'));
       }
     } else {
